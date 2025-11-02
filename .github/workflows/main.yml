@@ -1,0 +1,49 @@
+name: CI/CD Java Docker Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Récupérer le code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Installer JDK 17
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Build Maven
+      - name: Build with Maven
+        run: mvn -f app/pom.xml clean package -DskipTests
+
+      # Construire l'image Docker avec tag commit SHA
+      - name: Build Docker image
+        run: docker build -t devops-ci-cd-java:${{ github.sha }} .
+
+      # Stop container précédent si existe
+      - name: Stop any running container
+        run: |
+          docker ps -q --filter "name=devops-ci-cd-java" | grep -q . && docker stop devops-ci-cd-java || echo "No container running"
+
+      # Tester le conteneur
+      - name: Run container test
+        run: |
+          docker run --rm -d --name devops-ci-cd-java -p 8080:8080 devops-ci-cd-java:${{ github.sha }}
+          sleep 10
+          curl -f http://localhost:8080
+
+      # Upload du .jar généré
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-jar
+          path: app/target/*.jar
