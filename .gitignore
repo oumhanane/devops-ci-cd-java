@@ -1,0 +1,7 @@
+/app/target/
+*.jar
+.DS_Store
+.idea/
+.vscode/
+target/
+*.log
