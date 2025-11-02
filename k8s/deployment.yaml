@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-ci-cd-java-deployment
+  labels:
+    app: devops-ci-cd-java
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devops-ci-cd-java
+  template:
+    metadata:
+      labels:
+        app: devops-ci-cd-java
+    spec:
+      containers:
+        - name: devops-ci-cd-java
+          image: devops-ci-cd-java:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
